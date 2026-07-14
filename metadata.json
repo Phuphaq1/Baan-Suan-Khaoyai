@@ -1,0 +1,6 @@
+{
+  "name": "Property Management Assistant - บ้านสวน",
+  "description": "ระบบผู้ช่วยผู้จัดการบ้านพักโครงการบ้านสวน สำหรับคำนวณบิลค่าเช่า ค่าน้ำ ค่าไฟ และออกใบแจ้งหนี้อัตโนมัติ",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
