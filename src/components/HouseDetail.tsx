@@ -50,6 +50,7 @@ export default function HouseDetail({
   const [computedBill, setComputedBill] = useState<Partial<Bill> | null>(null);
   const [isSavedNotify, setIsSavedNotify] = useState(false);
   const [copiedBillId, setCopiedBillId] = useState<string | null>(null);
+  const [printBill, setPrintBill] = useState<Bill | null>(null);
 
   // Load house tenant into form states when house changes
   useEffect(() => {
@@ -290,6 +291,10 @@ export default function HouseDetail({
     navigator.clipboard.writeText(txt);
     setCopiedBillId(billItem.id);
     setTimeout(() => setCopiedBillId(null), 2000);
+  };
+
+  const handleExportPDF = (billItem: Bill) => {
+    setPrintBill(billItem);
   };
 
   const houseBills = bills.filter(b => b.houseId === house.id).sort((a, b) => b.billingMonth.localeCompare(a.billingMonth));
@@ -741,14 +746,23 @@ export default function HouseDetail({
                           </span>
                         </div>
 
-                        <div className="flex space-x-2 w-full sm:w-auto justify-end">
+                        <div className="flex flex-wrap gap-2 w-full sm:w-auto justify-end">
                           <button
                             onClick={() => handleCopyInvoice(computedBill as Bill)}
                             className="bg-natural-primary/10 hover:bg-natural-primary/20 text-natural-primary text-xs px-3.5 py-2.5 rounded-xl flex items-center gap-1.5 transition-all font-semibold cursor-pointer"
-                            title="คัดลอกข้อความทวงค่าเช่าเข้า LINE"
+                            title="คัดลอกใบแจ้งหนี้เข้า LINE"
                           >
                             {copiedBillId === computedBill.id ? <Check className="w-4 h-4 text-emerald-600 font-bold" /> : <Clipboard className="w-4 h-4" />}
-                            <span>{copiedBillId === computedBill.id ? 'คัดลอกสำเร็จ' : 'คัดลอกใบทวง'}</span>
+                            <span>{copiedBillId === computedBill.id ? 'คัดลอกสำเร็จ' : 'คัดลอกใบแจ้งหนี้'}</span>
+                          </button>
+
+                          <button
+                            onClick={() => handleExportPDF(computedBill as Bill)}
+                            className="bg-sky-50 hover:bg-sky-100 text-sky-800 text-xs px-3.5 py-2.5 rounded-xl flex items-center gap-1.5 transition-all font-semibold cursor-pointer border border-sky-200"
+                            title="พิมพ์หรือส่งออกไฟล์ PDF"
+                          >
+                            <FileText className="w-4 h-4 text-sky-600" />
+                            <span>พิมพ์ / ส่งออก PDF</span>
                           </button>
 
                           <button
@@ -808,9 +822,17 @@ export default function HouseDetail({
                           <button
                             onClick={() => handleCopyInvoice(billItem)}
                             className="bg-white border border-natural-border hover:bg-natural-primary/5 p-1.5 rounded-lg text-natural-primary transition-colors cursor-pointer"
-                            title="คัดลอกใบสรุปยอดค่าน้ำค่าไฟเข้า LINE"
+                            title="คัดลอกใบแจ้งหนี้เข้า LINE"
                           >
                             {isCopied ? <Check className="w-3.5 h-3.5 text-emerald-600 font-bold" /> : <Clipboard className="w-3.5 h-3.5" />}
+                          </button>
+
+                          <button
+                            onClick={() => handleExportPDF(billItem)}
+                            className="bg-white border border-sky-100 hover:bg-sky-50 p-1.5 rounded-lg text-sky-600 transition-colors cursor-pointer"
+                            title="พิมพ์หรือดาวน์โหลด PDF"
+                          >
+                            <FileText className="w-3.5 h-3.5" />
                           </button>
 
                           <button
@@ -867,6 +889,210 @@ export default function HouseDetail({
             <div className="flex items-center space-x-2 font-medium">
               <ShieldCheck className="w-5 h-5 text-emerald-600 animate-bounce" />
               <span>บันทึกการดำเนินการเรียบร้อยแล้ว! ข้อมูลได้รับการอัปเดตลงระบบเรียบร้อย</span>
+            </div>
+          </div>
+        )}
+
+        {/* Dynamic Print Preview Overlay (Allows full printing inside sandboxed iframe) */}
+        {printBill && (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-start sm:items-center justify-center p-2 sm:p-4 z-50 overflow-y-auto no-print">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl flex flex-col my-4 sm:my-8 border border-slate-200 animate-fade-in no-print">
+              {/* Action Header bar (Always hidden when printing) */}
+              <div className="flex items-center justify-between p-4 border-b border-slate-100 bg-slate-50 rounded-t-2xl no-print">
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 bg-emerald-50 text-emerald-700 rounded-lg">
+                    <FileText className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-slate-800 text-sm">พิมพ์หรือบันทึกใบแจ้งหนี้</h3>
+                    <p className="text-[10px] text-slate-400">ระบบ Print Preview จะซ่อนปุ่มแถบควบคุมนี้ออกโดยอัตโนมัติ</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => window.print()}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs px-4 py-2.5 rounded-xl flex items-center gap-1.5 transition-all cursor-pointer shadow-sm shadow-emerald-600/10 active:scale-95"
+                  >
+                    <FileText className="w-4 h-4" />
+                    <span>สั่งพิมพ์ / โหลด PDF</span>
+                  </button>
+                  <button
+                    onClick={() => setPrintBill(null)}
+                    className="bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold text-xs px-4 py-2.5 rounded-xl transition-all cursor-pointer active:scale-95"
+                  >
+                    ปิด
+                  </button>
+                </div>
+              </div>
+              
+              {/* Scrollable container on screen */}
+              <div className="p-4 sm:p-8 max-h-[75vh] overflow-y-auto bg-slate-50/50 rounded-b-2xl no-print">
+                <div id="print-area" className="bg-white text-slate-800 p-6 sm:p-10 mx-auto shadow-sm max-w-[700px] rounded-xl border border-slate-200/60">
+                  {/* Company Logo and Document Meta */}
+                  <div className="flex flex-col sm:flex-row justify-between items-start gap-4 border-b-2 border-natural-primary pb-6 mb-6">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 bg-natural-primary rounded-full flex items-center justify-center text-white text-xs font-bold font-mono">BS</div>
+                        <h2 className="text-xl font-bold text-natural-accent font-serif">โครงการบ้านสวน</h2>
+                      </div>
+                      <p className="text-3xs text-slate-500 mt-2 leading-relaxed">
+                        ห้องพักและบ้านเช่ารายเดือนสไตล์ธรรมชาติ ร่มรื่น และอบอุ่น<br />
+                        โทร: 081-123-4567 | อีเมล: baansuan@project.com
+                      </p>
+                    </div>
+                    <div className="text-left sm:text-right">
+                      <h1 className="text-lg font-bold text-natural-accent">ใบแจ้งหนี้ / ใบเสร็จรับเงิน</h1>
+                      <div className="text-3xs text-slate-500 mt-2 space-y-1">
+                        <div><strong className="text-slate-700">เลขที่เอกสาร:</strong> <span className="font-mono text-slate-900">INV-{printBill.id}</span></div>
+                        <div><strong className="text-slate-700">วันที่ออก:</strong> {new Date(printBill.createdAt).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+                        <div><strong className="text-slate-700">รอบบิลประจำเดือน:</strong> <span className="font-semibold text-slate-900">
+                          {(() => {
+                            const [year, month] = printBill.billingMonth.split('-');
+                            const monthNamesThai = [
+                              'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+                              'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+                            ];
+                            return `${monthNamesThai[parseInt(month, 10) - 1]} ${parseInt(year, 10) + 543}`;
+                          })()}
+                        </span></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Customer / Lease Details */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                    <div className="border border-slate-100 rounded-xl p-4 bg-slate-50/50">
+                      <span className="text-4xs font-bold text-slate-400 block uppercase tracking-wider mb-2">ข้อมูลผู้เช่า / ผู้รับบริการ</span>
+                      <div className="space-y-1 text-xs text-slate-700">
+                        <p><span className="text-slate-400">ชื่อผู้เช่า:</span> <strong>คุณ {house.tenant?.name || '-'}</strong></p>
+                        <p><span className="text-slate-400">บ้านเช่าเลขที่:</span> <strong>{house.name}</strong></p>
+                        <p><span className="text-slate-400">เบอร์โทรศัพท์:</span> <span className="font-mono font-medium">{house.tenant?.phone || '-'}</span></p>
+                      </div>
+                    </div>
+                    <div className="border border-slate-100 rounded-xl p-4 bg-slate-50/50">
+                      <span className="text-4xs font-bold text-slate-400 block uppercase tracking-wider mb-2">สถานะการชำระเงิน</span>
+                      <div className="space-y-1 text-xs text-slate-700">
+                        <p>
+                          <span className="text-slate-400">สถานะ:</span>{' '}
+                          {printBill.status === 'paid' ? (
+                            <span className="bg-emerald-50 text-emerald-800 border border-emerald-100 px-2 py-0.5 rounded-md font-bold text-[10px]">ชำระเงินเรียบร้อยแล้ว</span>
+                          ) : (
+                            <span className="bg-orange-50 text-orange-800 border border-orange-100 px-2 py-0.5 rounded-md font-bold text-[10px]">รอการชำระเงิน</span>
+                          )}
+                        </p>
+                        <p><span className="text-slate-400">กำหนดชำระ:</span> ภายในวันที่ 5 ของเดือนถัดไป</p>
+                        {printBill.paymentDate && (
+                          <p><span className="text-slate-400">วันที่ชำระเงิน:</span> <span className="font-medium text-emerald-700">{new Date(printBill.paymentDate).toLocaleDateString('th-TH')}</span></p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Table of Charges */}
+                  <div className="border border-slate-150 rounded-xl overflow-hidden mb-6">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="bg-slate-50/70 border-b border-slate-150 text-natural-accent font-bold text-[11px]">
+                          <th className="p-3">รายการรายละเอียด</th>
+                          <th className="p-3 text-right">หน่วยที่ใช้</th>
+                          <th className="p-3 text-right">ราคาต่อหน่วย</th>
+                          <th className="p-3 text-right">รวมเงิน (บาท)</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 text-xs">
+                        {/* 1. Base Rent */}
+                        <tr>
+                          <td className="p-3 text-slate-700 font-medium">ค่าเช่าบ้านพักรายเดือนคงที่</td>
+                          <td className="p-3 text-right text-slate-400 font-mono">-</td>
+                          <td className="p-3 text-right text-slate-400 font-mono">-</td>
+                          <td className="p-3 text-right text-slate-800 font-mono font-semibold">{printBill.rentCharge.toLocaleString()}.00</td>
+                        </tr>
+                        {/* 2. Electricity */}
+                        <tr>
+                          <td className="p-3 text-slate-700">
+                            <span className="font-medium block">ค่าไฟฟ้าประจำรอบเดือน</span>
+                            <span className="text-[10px] text-slate-400 leading-none">
+                              (เลขอ่านครั้งก่อน: {printBill.prevElecReading} - เลขอ่านปัจจุบัน: {printBill.currElecReading})
+                            </span>
+                          </td>
+                          <td className="p-3 text-right text-slate-800 font-mono">{printBill.elecUnits}</td>
+                          <td className="p-3 text-right text-slate-800 font-mono">{printBill.ratesSnapshot.electricityRate}</td>
+                          <td className="p-3 text-right text-slate-800 font-mono font-semibold">
+                            <div>{printBill.elecFinalCharge.toLocaleString()}.00</div>
+                            {printBill.elecMinApplied && (
+                              <div className="text-[9px] text-orange-600 font-semibold">*คิดอัตราเหมาขั้นต่ำ ({printBill.ratesSnapshot.electricityMinCharge} บ.)</div>
+                            )}
+                          </td>
+                        </tr>
+                        {/* 3. Water */}
+                        <tr>
+                          <td className="p-3 text-slate-700">
+                            <span className="font-medium block">ค่าน้ำประปาประจำรอบเดือน</span>
+                            <span className="text-[10px] text-slate-400 leading-none">
+                              (เลขอ่านครั้งก่อน: {printBill.prevWaterReading} - เลขอ่านปัจจุบัน: {printBill.currWaterReading})
+                            </span>
+                          </td>
+                          <td className="p-3 text-right text-slate-800 font-mono">{printBill.waterUnits}</td>
+                          <td className="p-3 text-right text-slate-800 font-mono">{printBill.ratesSnapshot.waterRate}</td>
+                          <td className="p-3 text-right text-slate-800 font-mono font-semibold">
+                            <div>{printBill.waterFinalCharge.toLocaleString()}.00</div>
+                            {printBill.waterMinApplied && (
+                              <div className="text-[9px] text-orange-600 font-semibold">*คิดอัตราเหมาขั้นต่ำ ({printBill.ratesSnapshot.waterMinCharge} บ.)</div>
+                            )}
+                          </td>
+                        </tr>
+                        {/* 4. Late Fees */}
+                        {printBill.lateCharge > 0 && (
+                          <tr>
+                            <td className="p-3 text-slate-700">
+                              <span className="font-medium block text-orange-700">ค่าปรับชำระล่าช้า (Late Charge)</span>
+                              <span className="text-[10px] text-slate-400 leading-none">
+                                (จำนวนวันเกินกำหนด {printBill.lateDays} วัน อัตราวันละ {printBill.ratesSnapshot.lateFeePerDay} บาท)
+                              </span>
+                            </td>
+                            <td className="p-3 text-right text-orange-700 font-mono">{printBill.lateDays}</td>
+                            <td className="p-3 text-right text-orange-700 font-mono">{printBill.ratesSnapshot.lateFeePerDay}</td>
+                            <td className="p-3 text-right text-orange-700 font-mono font-semibold">{printBill.lateCharge.toLocaleString()}.00</td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Summary Totals */}
+                  <div className="flex justify-end mb-6">
+                    <div className="w-full sm:w-80 border border-slate-200 rounded-xl overflow-hidden text-xs">
+                      <div className="flex justify-between p-3 border-b border-slate-100 text-slate-600">
+                        <span>ยอดรวมสุทธิ (Grand Total)</span>
+                        <span className="font-mono font-semibold">฿{printBill.grandTotal.toLocaleString()}.00</span>
+                      </div>
+                      <div className="flex justify-between p-3 bg-natural-primary/5 text-natural-accent font-bold text-sm">
+                        <span>ยอดที่ต้องชำระทั้งสิ้น</span>
+                        <span className="font-mono text-base">฿{printBill.grandTotal.toLocaleString()}.00</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Bank Transfer Details */}
+                  <div className="border border-slate-150 rounded-xl p-4 bg-slate-50/50 mb-6 text-xs text-slate-700">
+                    <h4 className="font-bold text-natural-accent mb-1.5 flex items-center gap-1.5">
+                      <span>🏦</span> ช่องทางการชำระเงิน (Payment Channel)
+                    </h4>
+                    <p className="text-slate-400 text-[11px] leading-relaxed">กรุณาโอนเงินผ่านบัญชีธนาคารด้านล่างนี้ และส่งหลักฐานสลิปโอนเงินให้ผู้ดูแลโครงการเพื่อยืนยัน</p>
+                    <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2 border-t border-slate-200/50 pt-3 text-[11px]">
+                      <div><strong className="text-slate-500">ธนาคาร:</strong> ธนาคารกสิกรไทย (KBANK)</div>
+                      <div><strong className="text-slate-500">เลขที่บัญชี:</strong> 012-3-45678-9</div>
+                      <div><strong className="text-slate-500">ชื่อบัญชี:</strong> โครงการบ้านสวน (Baan Suan)</div>
+                    </div>
+                  </div>
+
+                  {/* Thank You Note */}
+                  <div className="text-center text-slate-400 text-4xs border-t border-slate-150 pt-5 leading-relaxed">
+                    <p className="text-slate-500 font-semibold text-3xs">ขอขอบพระคุณที่ใช้บริการโครงการบ้านสวนของเราค่ะ 🙏</p>
+                    <p className="mt-1">ใบแจ้งหนี้ฉบับนี้พิมพ์โดยระบบบริหารจัดการโครงการบ้านสวนอัตโนมัติ</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}

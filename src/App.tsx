@@ -313,67 +313,69 @@ export default function App() {
       {/* Main Container Layout */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
-        {/* Quick Summary Analytics Banner */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-          <div className="bg-white rounded-2xl border border-natural-border p-4 shadow-2xs">
-            <span className="text-4xs text-natural-text/50 font-medium block uppercase tracking-wider">อัตราการจอง (Occupancy)</span>
-            <div className="flex items-baseline space-x-1.5 mt-2">
-              <strong className="text-2xl font-serif font-bold text-natural-accent font-mono">{occupiedCount}</strong>
-              <span className="text-xs text-natural-text/60">/ 10 หลัง</span>
+        {/* Quick Summary Analytics Banner - Rendered only on Dashboard page */}
+        {activeTab === 'dashboard' && (
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8 animate-fade-in">
+            <div className="bg-white rounded-2xl border border-natural-border p-4 shadow-2xs">
+              <span className="text-4xs text-natural-text/50 font-medium block uppercase tracking-wider">อัตราการจอง (Occupancy)</span>
+              <div className="flex items-baseline space-x-1.5 mt-2">
+                <strong className="text-2xl font-serif font-bold text-natural-accent font-mono">{occupiedCount}</strong>
+                <span className="text-xs text-natural-text/60">/ 10 หลัง</span>
+              </div>
+              <div className="mt-2 text-4xs text-natural-primary font-medium bg-natural-primary/5 inline-block px-2 py-0.5 rounded-md border border-natural-primary/10">
+                คิดเป็น {occupiedCount * 10}% ของโครงการ
+              </div>
             </div>
-            <div className="mt-2 text-4xs text-natural-primary font-medium bg-natural-primary/5 inline-block px-2 py-0.5 rounded-md border border-natural-primary/10">
-              คิดเป็น {occupiedCount * 10}% ของโครงการ
-            </div>
-          </div>
 
-          <div className="bg-white rounded-2xl border border-natural-border p-4 shadow-2xs">
-            <span className="text-4xs text-natural-text/50 font-medium block uppercase tracking-wider">บ้านว่าง (Vacant)</span>
-            <div className="flex items-baseline space-x-1.5 mt-2">
-              <strong className="text-2xl font-serif font-bold text-natural-accent font-mono">{vacantCount}</strong>
-              <span className="text-xs text-natural-text/60">/ 10 หลัง</span>
+            <div className="bg-white rounded-2xl border border-natural-border p-4 shadow-2xs">
+              <span className="text-4xs text-natural-text/50 font-medium block uppercase tracking-wider">บ้านว่าง (Vacant)</span>
+              <div className="flex items-baseline space-x-1.5 mt-2">
+                <strong className="text-2xl font-serif font-bold text-natural-accent font-mono">{vacantCount}</strong>
+                <span className="text-xs text-natural-text/60">/ 10 หลัง</span>
+              </div>
+              <div className="mt-2 text-4xs text-natural-text/60 font-medium bg-natural-primary/5 inline-block px-2 py-0.5 rounded-md border border-natural-border/50">
+                พร้อมเข้าอยู่ได้ทันที
+              </div>
             </div>
-            <div className="mt-2 text-4xs text-natural-text/60 font-medium bg-natural-primary/5 inline-block px-2 py-0.5 rounded-md border border-natural-border/50">
-              พร้อมเข้าอยู่ได้ทันที
-            </div>
-          </div>
 
-          <div className="bg-white rounded-2xl border border-natural-border p-4 shadow-2xs">
-            <span className="text-4xs text-natural-text/50 font-medium block uppercase tracking-wider">คำนวณบิลแล้ว (Bills Ready)</span>
-            <div className="flex items-baseline space-x-1.5 mt-2">
-              <strong className="text-2xl font-serif font-bold text-natural-accent font-mono">{billsForSelectedMonth.length}</strong>
-              <span className="text-xs text-natural-text/60">/ {occupiedCount} หลังที่อยู่</span>
+            <div className="bg-white rounded-2xl border border-natural-border p-4 shadow-2xs">
+              <span className="text-4xs text-natural-text/50 font-medium block uppercase tracking-wider">คำนวณบิลแล้ว (Bills Ready)</span>
+              <div className="flex items-baseline space-x-1.5 mt-2">
+                <strong className="text-2xl font-serif font-bold text-natural-accent font-mono">{billsForSelectedMonth.length}</strong>
+                <span className="text-xs text-natural-text/60">/ {occupiedCount} หลังที่อยู่</span>
+              </div>
+              <div className="mt-2 text-4xs flex items-center">
+                {uncalculatedCount > 0 ? (
+                  <span className="text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md font-medium border border-amber-100">เหลือค้างทำ {uncalculatedCount} หลัง</span>
+                ) : (
+                  <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md font-medium border border-emerald-100">คำนวณครบเรียบร้อย</span>
+                )}
+              </div>
             </div>
-            <div className="mt-2 text-4xs flex items-center">
-              {uncalculatedCount > 0 ? (
-                <span className="text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md font-medium border border-amber-100">เหลือค้างทำ {uncalculatedCount} หลัง</span>
-              ) : (
-                <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md font-medium border border-emerald-100">คำนวณครบเรียบร้อย</span>
-              )}
-            </div>
-          </div>
 
-          <div className="bg-white rounded-2xl border border-natural-border p-4 shadow-2xs">
-            <span className="text-4xs text-natural-text/50 font-medium block uppercase tracking-wider">รอชำระค่าเช่า (Unpaid Invoices)</span>
-            <div className="flex items-baseline space-x-1.5 mt-2">
-              <strong className="text-2xl font-serif font-bold text-orange-700 font-mono">{pendingCount}</strong>
-              <span className="text-xs text-natural-text/60">บิลค้างจ่าย</span>
+            <div className="bg-white rounded-2xl border border-natural-border p-4 shadow-2xs">
+              <span className="text-4xs text-natural-text/50 font-medium block uppercase tracking-wider">รอชำระค่าเช่า (Unpaid Invoices)</span>
+              <div className="flex items-baseline space-x-1.5 mt-2">
+                <strong className="text-2xl font-serif font-bold text-orange-700 font-mono">{pendingCount}</strong>
+                <span className="text-xs text-natural-text/60">บิลค้างจ่าย</span>
+              </div>
+              <div className="mt-2 text-4xs text-orange-700 font-medium bg-orange-50 border border-orange-100 inline-block px-2 py-0.5 rounded-md">
+                เริ่มคิดค่าปรับเมื่อพ้นกำหนด
+              </div>
             </div>
-            <div className="mt-2 text-4xs text-orange-700 font-medium bg-orange-50 border border-orange-100 inline-block px-2 py-0.5 rounded-md">
-              เริ่มคิดค่าปรับเมื่อพ้นกำหนด
-            </div>
-          </div>
 
-          <div className="bg-white rounded-2xl border border-natural-border p-4 shadow-2xs col-span-2 md:col-span-1">
-            <span className="text-4xs text-natural-text/50 font-medium block uppercase tracking-wider">รายได้ที่รับแล้ว (Paid Revenue)</span>
-            <div className="flex items-baseline space-x-1.5 mt-2">
-              <strong className="text-2xl font-serif font-bold text-natural-primary font-mono">{totalRevenue.toLocaleString()}</strong>
-              <span className="text-xs text-natural-text/60">บาท</span>
-            </div>
-            <div className="mt-2 text-4xs text-natural-primary font-medium bg-natural-primary/5 border border-natural-primary/10 inline-block px-2 py-0.5 rounded-md">
-              ชำระสำเร็จ {paidCount} บิล
+            <div className="bg-white rounded-2xl border border-natural-border p-4 shadow-2xs col-span-2 md:col-span-1">
+              <span className="text-4xs text-natural-text/50 font-medium block uppercase tracking-wider">รายได้ที่รับแล้ว (Paid Revenue)</span>
+              <div className="flex items-baseline space-x-1.5 mt-2">
+                <strong className="text-2xl font-serif font-bold text-natural-primary font-mono">{totalRevenue.toLocaleString()}</strong>
+                <span className="text-xs text-natural-text/60">บาท</span>
+              </div>
+              <div className="mt-2 text-4xs text-natural-primary font-medium bg-natural-primary/5 border border-natural-primary/10 inline-block px-2 py-0.5 rounded-md">
+                ชำระสำเร็จ {paidCount} บิล
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Dynamic Panels */}
         {activeTab === 'rates' ? (

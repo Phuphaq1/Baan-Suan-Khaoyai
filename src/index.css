@@ -43,3 +43,45 @@
 .animate-fade-in {
   animation: fadeIn 0.3s ease-out forwards;
 }
+
+/* Print styles for reliable iframe-based browser print preview */
+@media print {
+  /* Hide all elements on the page */
+  body * {
+    visibility: hidden !important;
+  }
+
+  .no-print, .no-print * {
+    display: none !important;
+    height: 0 !important;
+    width: 0 !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  
+  /* Show only the printable container and all its descendant elements */
+  #print-area, #print-area * {
+    visibility: visible !important;
+  }
+  
+  /* Position the print container absolutely at the top left of the page */
+  #print-area {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    background: white !important;
+    color: black !important;
+  }
+  
+  /* Prevent background color stripping in chrome/safari */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
+

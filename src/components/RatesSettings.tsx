@@ -8,20 +8,27 @@ interface RatesSettingsProps {
 }
 
 export default function RatesSettings({ currentRates, onSaveRates }: RatesSettingsProps) {
-  const [rates, setRates] = useState<UtilityRates>({ ...currentRates });
+  const [rates, setRates] = useState<{ [key in keyof UtilityRates]: number | string }>({ ...currentRates });
   const [isSaved, setIsSaved] = useState(false);
 
   const handleChange = (key: keyof UtilityRates, val: string) => {
-    const numericVal = parseFloat(val) || 0;
     setRates(prev => ({
       ...prev,
-      [key]: numericVal
+      [key]: val
     }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSaveRates(rates);
+    const finalRates: UtilityRates = {
+      electricityRate: parseFloat(rates.electricityRate as string) || 0,
+      electricityMinCharge: isNaN(parseFloat(rates.electricityMinCharge as string)) ? 0 : parseFloat(rates.electricityMinCharge as string),
+      waterRate: parseFloat(rates.waterRate as string) || 0,
+      waterMinCharge: isNaN(parseFloat(rates.waterMinCharge as string)) ? 0 : parseFloat(rates.waterMinCharge as string),
+      lateFeePerDay: isNaN(parseFloat(rates.lateFeePerDay as string)) ? 0 : parseFloat(rates.lateFeePerDay as string),
+      rentRate: parseFloat(rates.rentRate as string) || 0,
+    };
+    onSaveRates(finalRates);
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 3000);
   };
@@ -79,7 +86,7 @@ export default function RatesSettings({ currentRates, onSaveRates }: RatesSettin
                   <input
                     type="number"
                     step="0.01"
-                    value={rates.electricityRate || ''}
+                    value={rates.electricityRate ?? ''}
                     onChange={(e) => handleChange('electricityRate', e.target.value)}
                     className="w-full bg-white border border-natural-border rounded-xl py-2 px-3 pl-3 pr-12 text-sm text-natural-text focus:outline-none focus:border-natural-primary focus:ring-1 focus:ring-natural-primary font-mono font-bold"
                     placeholder="7"
@@ -96,7 +103,7 @@ export default function RatesSettings({ currentRates, onSaveRates }: RatesSettin
                 <div className="relative">
                   <input
                     type="number"
-                    value={rates.electricityMinCharge || ''}
+                    value={rates.electricityMinCharge ?? ''}
                     onChange={(e) => handleChange('electricityMinCharge', e.target.value)}
                     className="w-full bg-white border border-natural-border rounded-xl py-2 px-3 pl-3 pr-12 text-sm text-natural-text focus:outline-none focus:border-natural-primary focus:ring-1 focus:ring-natural-primary font-mono font-bold"
                     placeholder="100"
@@ -124,7 +131,7 @@ export default function RatesSettings({ currentRates, onSaveRates }: RatesSettin
                   <input
                     type="number"
                     step="0.01"
-                    value={rates.waterRate || ''}
+                    value={rates.waterRate ?? ''}
                     onChange={(e) => handleChange('waterRate', e.target.value)}
                     className="w-full bg-white border border-natural-border rounded-xl py-2 px-3 pl-3 pr-12 text-sm text-natural-text focus:outline-none focus:border-natural-primary focus:ring-1 focus:ring-natural-primary font-mono font-bold"
                     placeholder="18"
@@ -141,7 +148,7 @@ export default function RatesSettings({ currentRates, onSaveRates }: RatesSettin
                 <div className="relative">
                   <input
                     type="number"
-                    value={rates.waterMinCharge || ''}
+                    value={rates.waterMinCharge ?? ''}
                     onChange={(e) => handleChange('waterMinCharge', e.target.value)}
                     className="w-full bg-white border border-natural-border rounded-xl py-2 px-3 pl-3 pr-12 text-sm text-natural-text focus:outline-none focus:border-natural-primary focus:ring-1 focus:ring-natural-primary font-mono font-bold"
                     placeholder="50"
@@ -168,7 +175,7 @@ export default function RatesSettings({ currentRates, onSaveRates }: RatesSettin
                 <div className="relative">
                   <input
                     type="number"
-                    value={rates.rentRate || ''}
+                    value={rates.rentRate ?? ''}
                     onChange={(e) => handleChange('rentRate', e.target.value)}
                     className="w-full bg-white border border-natural-border rounded-xl py-2 px-3 pl-3 pr-12 text-sm text-natural-text focus:outline-none focus:border-natural-primary focus:ring-1 focus:ring-natural-primary font-mono font-bold"
                     placeholder="4500"
@@ -185,7 +192,7 @@ export default function RatesSettings({ currentRates, onSaveRates }: RatesSettin
                 <div className="relative">
                   <input
                     type="number"
-                    value={rates.lateFeePerDay || ''}
+                    value={rates.lateFeePerDay ?? ''}
                     onChange={(e) => handleChange('lateFeePerDay', e.target.value)}
                     className="w-full bg-white border border-natural-border rounded-xl py-2 px-3 pl-3 pr-12 text-sm text-natural-text focus:outline-none focus:border-natural-primary focus:ring-1 focus:ring-natural-primary font-mono font-bold"
                     placeholder="50"
@@ -233,7 +240,7 @@ export default function RatesSettings({ currentRates, onSaveRates }: RatesSettin
             </p>
             <ul className="list-disc list-inside space-y-1 text-natural-text/65 font-light pl-1">
               <li>ระยะเวลาการทำสัญญาเช่าขั้นต่ำคือ <strong className="text-natural-accent font-semibold">12 เดือน</strong> (ไม่สามารถลดสัญญาได้ต่ำกว่า 6 เดือน)</li>
-              <li>ค่าใช้จ่ายจริงวันเข้าอยู่อย่างน้อย <strong className="text-natural-accent font-semibold">9,000 บาท</strong> (แบ่งเป็น เงินประกันความเสียหาย {rates.rentRate.toLocaleString()} บาท และค่าเช่าล่วงหน้าเดือนแรก {rates.rentRate.toLocaleString()} บาท)</li>
+              <li>ค่าใช้จ่ายจริงวันเข้าอยู่อย่างน้อย <strong className="text-natural-accent font-semibold">9,000 บาท</strong> (แบ่งเป็น เงินประกันความเสียหาย {Number(rates.rentRate || 0).toLocaleString()} บาท และค่าเช่าล่วงหน้าเดือนแรก {Number(rates.rentRate || 0).toLocaleString()} บาท)</li>
             </ul>
           </div>
 

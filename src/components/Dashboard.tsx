@@ -294,38 +294,132 @@ export default function Dashboard({ bills, houses }: DashboardProps) {
               <p className="text-xs font-light">ยังไม่มีข้อมูลบิลในระบบสำหรับสร้างกราฟประวัติย้อนหลัง</p>
             </div>
           ) : (
-            <div className="h-80 w-full font-mono text-3xs">
-              <ResponsiveContainer width="100%" height="100%">
-                {activeChart === 'revenue' ? (
-                  <BarChart
-                    data={monthlyData}
-                    margin={{ top: 20, right: 10, left: -10, bottom: 0 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#EBECEB" />
-                    <XAxis dataKey="formattedMonth" stroke="#8E908D" tickLine={false} />
-                    <YAxis stroke="#8E908D" tickLine={false} />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Legend iconType="circle" wrapperStyle={{ paddingTop: 10 }} />
-                    <Bar name="ค่าเช่าคงที่" dataKey="rent" stackId="a" fill="#384B42" />
-                    <Bar name="ค่าไฟฟ้า" dataKey="electricity" stackId="a" fill="#f97316" />
-                    <Bar name="ค่าน้ำประปา" dataKey="water" stackId="a" fill="#0ea5e9" />
-                    <Bar name="ค่าปรับล่าช้า" dataKey="lateFees" stackId="a" fill="#ef4444" />
-                  </BarChart>
-                ) : (
-                  <LineChart
-                    data={monthlyData}
-                    margin={{ top: 20, right: 10, left: -10, bottom: 0 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#EBECEB" />
-                    <XAxis dataKey="formattedMonth" stroke="#8E908D" tickLine={false} />
-                    <YAxis stroke="#8E908D" tickLine={false} />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Legend iconType="circle" wrapperStyle={{ paddingTop: 10 }} />
-                    <Line name="ไฟฟ้าที่ใช้ (หน่วย)" type="monotone" dataKey="elecUnits" stroke="#f97316" strokeWidth={2.5} activeDot={{ r: 6 }} />
-                    <Line name="น้ำที่ใช้ (หน่วย)" type="monotone" dataKey="waterUnits" stroke="#0ea5e9" strokeWidth={2.5} activeDot={{ r: 6 }} />
-                  </LineChart>
-                )}
-              </ResponsiveContainer>
+            <div className="space-y-4">
+              {/* Extra visual action panel for charts */}
+              <div className="flex items-center justify-end gap-4 text-xs">
+                <button
+                  onClick={() => setShowValuesOnChart(!showValuesOnChart)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg border border-natural-border bg-slate-50 hover:bg-slate-100 text-natural-text/75 font-medium cursor-pointer transition-colors text-3xs uppercase tracking-wider"
+                >
+                  {showValuesOnChart ? <Eye className="w-3.5 h-3.5 text-natural-primary" /> : <EyeOff className="w-3.5 h-3.5" />}
+                  {showValuesOnChart ? 'ซ่อนตัวเลขบนกราฟ' : 'แสดงตัวเลขบนกราฟ'}
+                </button>
+              </div>
+
+              <div className="h-80 w-full font-sans text-[11px] select-none">
+                <ResponsiveContainer width="100%" height="100%">
+                  {activeChart === 'revenue' ? (
+                    <BarChart
+                      data={monthlyData}
+                      margin={{ top: 20, right: 10, left: 10, bottom: 0 }}
+                      barSize={40}
+                    >
+                      <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="#E2E8F0" opacity={0.6} />
+                      <XAxis 
+                        dataKey="formattedMonth" 
+                        stroke="#94A3B8" 
+                        tickLine={false} 
+                        axisLine={false}
+                        dy={8}
+                        style={{ fontSize: '10px', fontWeight: 500 }}
+                      />
+                      <YAxis 
+                        stroke="#94A3B8" 
+                        tickLine={false} 
+                        axisLine={false}
+                        dx={-8}
+                        tickFormatter={(v) => `฿${v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v}`}
+                        style={{ fontSize: '10px', fontFamily: 'monospace' }}
+                      />
+                      <Tooltip content={<CustomTooltip />} cursor={{ fill: '#384B42', opacity: 0.03 }} />
+                      <Legend 
+                        iconType="circle" 
+                        iconSize={8}
+                        wrapperStyle={{ paddingTop: 16, fontSize: '11px', fontWeight: 500 }} 
+                      />
+                      <Bar 
+                        name="ค่าเช่าคงที่" 
+                        dataKey="rent" 
+                        stackId="a" 
+                        fill="#384B42" 
+                        radius={showValuesOnChart ? [0, 0, 0, 0] : [0, 0, 0, 0]} 
+                        label={showValuesOnChart ? { position: 'inside', fill: '#ffffff', fontSize: 9, fontWeight: 'bold', formatter: (v: number) => v > 0 ? `฿${(v/1000).toFixed(1)}k` : '' } : undefined}
+                      />
+                      <Bar 
+                        name="ค่าไฟฟ้า" 
+                        dataKey="electricity" 
+                        stackId="a" 
+                        fill="#f97316" 
+                        label={showValuesOnChart ? { position: 'inside', fill: '#ffffff', fontSize: 9, fontWeight: 'bold', formatter: (v: number) => v > 0 ? `฿${(v/1000).toFixed(1)}k` : '' } : undefined}
+                      />
+                      <Bar 
+                        name="ค่าน้ำประปา" 
+                        dataKey="water" 
+                        stackId="a" 
+                        fill="#0ea5e9" 
+                        label={showValuesOnChart ? { position: 'inside', fill: '#ffffff', fontSize: 9, fontWeight: 'bold', formatter: (v: number) => v > 0 ? `฿${(v/1000).toFixed(1)}k` : '' } : undefined}
+                      />
+                      <Bar 
+                        name="ค่าปรับล่าช้า" 
+                        dataKey="lateFees" 
+                        stackId="a" 
+                        fill="#ef4444" 
+                        radius={[4, 4, 0, 0]}
+                        label={showValuesOnChart ? { position: 'top', fill: '#ef4444', fontSize: 9, fontWeight: 'bold', formatter: (v: number) => v > 0 ? `+฿${v}` : '' } : undefined}
+                      />
+                    </BarChart>
+                  ) : (
+                    <LineChart
+                      data={monthlyData}
+                      margin={{ top: 20, right: 20, left: 10, bottom: 0 }}
+                    >
+                      <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="#E2E8F0" opacity={0.6} />
+                      <XAxis 
+                        dataKey="formattedMonth" 
+                        stroke="#94A3B8" 
+                        tickLine={false} 
+                        axisLine={false}
+                        dy={8}
+                        style={{ fontSize: '10px', fontWeight: 500 }}
+                      />
+                      <YAxis 
+                        stroke="#94A3B8" 
+                        tickLine={false} 
+                        axisLine={false}
+                        dx={-8}
+                        tickFormatter={(v) => `${v} u`}
+                        style={{ fontSize: '10px', fontFamily: 'monospace' }}
+                      />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Legend 
+                        iconType="circle" 
+                        iconSize={8}
+                        wrapperStyle={{ paddingTop: 16, fontSize: '11px', fontWeight: 500 }} 
+                      />
+                      <Line 
+                        name="ไฟฟ้าที่ใช้ (หน่วย)" 
+                        type="monotone" 
+                        dataKey="elecUnits" 
+                        stroke="#f97316" 
+                        strokeWidth={3} 
+                        dot={{ r: 4, strokeWidth: 1 }}
+                        activeDot={{ r: 7, strokeWidth: 0, fill: '#f97316' }} 
+                        label={showValuesOnChart ? { position: 'top', fill: '#ea580c', fontSize: 10, fontWeight: 'bold', offset: 10 } : undefined}
+                      />
+                      <Line 
+                        name="น้ำที่ใช้ (หน่วย)" 
+                        type="monotone" 
+                        dataKey="waterUnits" 
+                        stroke="#0ea5e9" 
+                        strokeWidth={3} 
+                        dot={{ r: 4, strokeWidth: 1 }}
+                        activeDot={{ r: 7, strokeWidth: 0, fill: '#0ea5e9' }} 
+                        label={showValuesOnChart ? { position: 'bottom', fill: '#0284c7', fontSize: 10, fontWeight: 'bold', offset: 10 } : undefined}
+                      />
+                    </LineChart>
+                  )}
+                </ResponsiveContainer>
+              </div>
             </div>
           )}
         </div>
